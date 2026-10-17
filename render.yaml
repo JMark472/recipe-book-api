@@ -1,0 +1,38 @@
+# Render Blueprint for the Recipe Book API.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# With this file in the repo you can use "New +" -> "Blueprint" on Render and
+# it will create the service for you. You only need to fill in the two secret
+# values marked `sync: false` (DATABASE_URL and FRONTEND_URL).
+services:
+  - type: web
+    name: recipe-book-api
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /api/health
+    # --include=dev is required: Render sets NODE_ENV=production, which would
+    # otherwise make `npm ci` skip the devDependencies (drizzle-kit, tsdown)
+    # that the migrate and build steps need.
+    buildCommand: npm ci --include=dev && npm run db:migrate && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_NAME
+        value: Recipe Book API
+      # Render injects PORT automatically; the app reads process.env.PORT.
+      # Render generates a strong value the first time the service is created.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CSRF_SECRET
+        generateValue: true
+      # Fill these in yourself in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false
